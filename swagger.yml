@@ -1,0 +1,134 @@
+openapi: 3.0.0
+info:
+  title: Auth server
+  description: '
+  ## Описание заголовков запросов
+
+  * **X-API-KEY**  - API key сервера
+
+  * **X-DEVICE-ID** -  Id устройства
+
+  * **X-APP**  - Тип устройства (1 - android, 2 - ios, 3 -web, 4 - system)
+  '
+  version: '0.1'
+paths:
+
+  /auth:
+    post:
+      security:
+        - appAuth: [ ]
+          deviceIdAuth: [ ]
+          apiKeyAuth: [ ]
+      summary: Authorization by phone and password
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: User's phone
+                password:
+                  type: string
+                  description: User's password
+              required:
+                - phone
+                - password
+
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponce'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/refresh:
+    post:
+      summary: Refresh tokens
+      security:
+        - appAuth: [ ]
+          deviceIdAuth: [ ]
+          apiKeyAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Refresh token
+
+              required:
+                - token
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponce'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    deviceIdAuth:
+      type: apiKey
+      in: header
+      name: X-DEVICE-ID
+    appAuth:
+      type: apiKey
+      in: header
+      name: X-APP
+  schemas:
+    AuthResponce:
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3IiOjM0LCJleHAiOjE1NDUyMjMzMDB9.2NnRmcmLcVpUJeV7A8QFgkGreo2pQ3CzxnpfkdrJ61c"
+        accessTokenExp:
+          type: integer
+          example: 1537533700
+          description: Access token expiration time
+        refreshToken:
+          type: string
+          description: JWT refresh token
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3IiOjM0LCJleHAiOjE1NDUyMjMzMDB9.2NnRmcmLcVpUJeV7A8QFgkGreo2pQ3CzxnpfkdrJ61c"
+        refreshTokenExp:
+          type: integer
+          example: 1545223300
+          description: Refresh token expiration time
+    Error:
+      properties:
+        code:
+          type: integer
+          example: 404
+          description: Error code
+        status:
+          type: string
+          example: fail
+        body:
+          type: string
+          example: Not found
+          description: Message error
